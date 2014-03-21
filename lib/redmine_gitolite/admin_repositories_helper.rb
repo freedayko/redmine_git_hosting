@@ -281,11 +281,13 @@ module RedmineGitolite
       rewind_users = users.select{|user| user.allowed_to?(:manage_repository, project)}
       write_users  = users.select{|user| user.allowed_to?(:commit_access, project)} - rewind_users
       read_users   = users.select{|user| user.allowed_to?(:view_changesets, project)} - rewind_users - write_users
+      deploy_users   = users.select{|user| user.allowed_to?(:create_deployment_keys, project) || user.allowed_to?(:edit_deployment_keys, project)}
 
       if project.active?
         rewind = rewind_users.map{|user| user.gitolite_identifier}
         write  = write_users.map{|user| user.gitolite_identifier}
         read   = read_users.map{|user| user.gitolite_identifier}
+        deploy = deploy_users.map{|user| user.gitolite_identifier}
 
         ## DEPLOY KEY
         deploy_keys = repository.repository_deployment_credentials.active
@@ -310,10 +312,23 @@ module RedmineGitolite
         read     = all_read.map{|user| user.gitolite_identifier}
         read << "REDMINE_CLOSED_PROJECT" if read.empty?
       end
+      
+      developer_team = rewind + write
 
       permissions = {}
-      permissions["RW+"] = {"" => rewind.uniq.sort} unless rewind.empty?
-      permissions["RW"] = {"" => write.uniq.sort} unless write.empty?
+      permissions["RW+"] = {}
+      permissions["RW+"] = {
+        "master$" => rewind.uniq.sort,
+        "[0-9]+$" => rewind.uniq.sort,
+        "r/" => rewind.uniq.sort
+      } unless rewind.empty?
+      permissions["RW"] = {
+        "master$" => write.uniq.sort,
+        "[0-9]+$" => write.uniq.sort,
+        "r/" => write.uniq.sort
+      } unless write.empty?
+      permissions["RW+"]["live$"] = deploy.uniq.sort unless deploy.empty?
+      permissions["RW+"]["p/USER/"] = developer_team.uniq.sort unless developer_team.empty?
       permissions["R"] = {"" => read.uniq.sort} unless read.empty?
 
       permissions
