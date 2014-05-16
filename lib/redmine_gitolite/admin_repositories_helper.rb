@@ -320,7 +320,8 @@ module RedmineGitolite
       permissions["RW+"] = {
         "master$" => rewind.uniq.sort,
         "[0-9]+$" => rewind.uniq.sort,
-        "r/" => rewind.uniq.sort
+        "r/" => rewind.uniq.sort,
+        "refs/tags/[0-9.]+$" => rewind.uniq.sort
       } unless rewind.empty?
       permissions["RW"] = {
         "master$" => write.uniq.sort,
