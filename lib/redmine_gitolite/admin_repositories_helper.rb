@@ -318,13 +318,13 @@ module RedmineGitolite
       permissions = {}
       permissions["RW+"] = {}
       permissions["RW+"] = {
-        "real$" => rewind.uniq.sort,
-        "i[0-9]+(-[a-zA-Z]+)?$" => rewind.uniq.sort,
+        "rel$" => rewind.uniq.sort,
+        "i[0-9]+(-[a-zA-Z_]+)?$" => rewind.uniq.sort,
         "refs/tags/[0-9.]+$" => rewind.uniq.sort
       } unless rewind.empty?
       permissions["RW"] = {
-        "real$" => write.uniq.sort,
-        "i[0-9]+(-[a-zA-Z]+)?$" => write.uniq.sort,
+        "rel$" => write.uniq.sort,
+        "i[0-9]+(-[a-zA-Z_]+)?$" => write.uniq.sort,
       } unless write.empty?
       permissions["RW+"]["master$"] = deploy.uniq.sort unless deploy.empty?
       permissions["RW+"]["p/USER/"] = developer_team.uniq.sort unless developer_team.empty?
